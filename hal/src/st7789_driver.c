@@ -1,4 +1,4 @@
-// ST7789 SPI Display - WORKING VERSION for BeagleY-AI
+// ST7789 Low-Level Driver for BeagleY-AI
 // Uses SPI0.0 + libgpiod v2
 // Wiring: DC=gpiochip1/33, RST=gpiochip2/8
 
@@ -11,17 +11,18 @@
 #include <sys/ioctl.h>
 #include <gpiod.h>
 
-#define WIDTH  240
-#define HEIGHT 320
+#define WIDTH  320
+#define HEIGHT 240
 
 #define DC_CHIP   "/dev/gpiochip1"
 #define DC_LINE   33
 #define RST_CHIP  "/dev/gpiochip2"
 #define RST_LINE  8
 
-static int spi_fd;
-static struct gpiod_line_request *dc_req;
-static struct gpiod_line_request *rst_req;
+// Global variables (exported for HAL)
+int spi_fd;
+struct gpiod_line_request *dc_req;
+struct gpiod_line_request *rst_req;
 
 // ================ SPI Write Helpers ==================
 
@@ -77,7 +78,7 @@ void st7789_init()
     spi_write_data(pixfmt, 1);
 
     spi_write_cmd(0x36);   // MADCTL - Memory Data Access Control
-    uint8_t madctl[1] = {0x08}; // Portrait, BGR order
+    uint8_t madctl[1] = {0x68}; // Landscape mode (0x60 | 0x08 for BGR)
     spi_write_data(madctl, 1);
 
     spi_write_cmd(0x21);  // INVON - Display Inversion ON (CRITICAL!)
@@ -201,84 +202,6 @@ int setup_gpio()
     gpiod_line_settings_free(settings);
     gpiod_chip_close(chip_dc);
     gpiod_chip_close(chip_rst);
-
-    return 0;
-}
-
-// ================ MAIN ==================
-
-int main()
-{
-    printf("ST7789 Display Test\n");
-    printf("===================\n\n");
-
-    // ---------------- SPI setup ----------------
-    printf("Opening SPI...\n");
-    spi_fd = open("/dev/spidev0.0", O_RDWR);
-    if (spi_fd < 0) {
-        perror("open spidev");
-        return 1;
-    }
-
-    uint8_t mode = 0;
-    ioctl(spi_fd, SPI_IOC_WR_MODE, &mode);
-    uint8_t bits = 8;
-    ioctl(spi_fd, SPI_IOC_WR_BITS_PER_WORD, &bits);
-    uint32_t speed = 40000000;
-    ioctl(spi_fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed);
-
-    // ---------------- GPIO setup ----------------
-    printf("Setting up GPIO...\n");
-    if (setup_gpio() < 0) {
-        close(spi_fd);
-        return 1;
-    }
-
-    // ---------------- Display Init ----------------
-    printf("Initializing display...\n");
-    st7789_init();
-
-    // ---------------- Color Test ----------------
-    printf("\nTesting colors:\n");
-    
-    printf("  RED\n");
-    fill_color(rgb_to_color(255, 0, 0));
-    sleep(1);
-    
-    printf("  GREEN\n");
-    fill_color(rgb_to_color(0, 255, 0));
-    sleep(1);
-    
-    printf("  BLUE\n");
-    fill_color(rgb_to_color(0, 0, 255));
-    sleep(1);
-    
-    printf("  WHITE\n");
-    fill_color(rgb_to_color(255, 255, 255));
-    sleep(1);
-    
-    printf("  BLACK\n");
-    fill_color(rgb_to_color(0, 0, 0));
-    sleep(1);
-
-    // ---------------- Pattern Test ----------------
-    printf("\nDrawing color bars...\n");
-    fill_color(rgb_to_color(0, 0, 0)); // Clear to black
-    
-    uint16_t bar_height = HEIGHT / 6;
-    draw_rect(0, 0*bar_height, WIDTH, bar_height, rgb_to_color(255, 0, 0));     // Red
-    draw_rect(0, 1*bar_height, WIDTH, bar_height, rgb_to_color(0, 255, 0));     // Green
-    draw_rect(0, 2*bar_height, WIDTH, bar_height, rgb_to_color(0, 0, 255));     // Blue
-    draw_rect(0, 3*bar_height, WIDTH, bar_height, rgb_to_color(255, 255, 0));   // Yellow
-    draw_rect(0, 4*bar_height, WIDTH, bar_height, rgb_to_color(255, 0, 255));   // Magenta
-    draw_rect(0, 5*bar_height, WIDTH, bar_height, rgb_to_color(0, 255, 255));   // Cyan
-
-    printf("\nDONE! Display should show 6 color bars.\n");
-
-    // Cleanup
-    gpiod_line_request_release(dc_req);
-    gpiod_line_request_release(rst_req);
-    close(spi_fd);
 
     return 0;
 }

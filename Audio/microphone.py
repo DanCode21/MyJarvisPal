@@ -11,8 +11,7 @@ def open_stream(rate, frame_length):
         channels=1,
         format=pyaudio.paInt16,
         input=True,
-        frames_per_buffer=frame_length
-    )
+        frames_per_buffer=frame_length)
 
 def cleanup():
     pa.terminate()

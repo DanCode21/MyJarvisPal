@@ -6,8 +6,27 @@ import time
 from System.config import MUSIC_DIR
 from System.tts import speak
 
+DISPLAY_PIPE = "/tmp/jarvis_display"
 current_music_process = None
 is_paused = False
+
+def send_display_command(command):
+    """Send command to the ST7789 display controller."""
+    try:
+        # Check if pipe exists first
+        if not os.path.exists(DISPLAY_PIPE):
+            return
+        
+        subprocess.run(
+            ['sudo', 'tee', DISPLAY_PIPE], 
+            input=(command + '\n').encode(), 
+            stdout=subprocess.DEVNULL, 
+            stderr=subprocess.DEVNULL,
+            timeout=0.5
+        )
+        print(f"Display: {command}")
+    except:
+        pass  # Silently fail if display not available
 
 def is_music_playing():
     """Check if music is currently playing (not paused, not stopped)."""
@@ -29,6 +48,7 @@ def stop_music():
             pass
         current_music_process = None
         is_paused = False
+        send_display_command("STOP")
 
 def pause_music():
     """Pause currently playing music. Returns True if successful."""
@@ -38,6 +58,7 @@ def pause_music():
             if current_music_process.poll() is None:
                 os.kill(current_music_process.pid, signal.SIGSTOP)
                 is_paused = True
+                send_display_command("PAUSE")
                 print("DEBUG - Music paused successfully")
                 return True
             else:
@@ -57,6 +78,7 @@ def resume_music():
             if current_music_process.poll() is None:
                 os.kill(current_music_process.pid, signal.SIGCONT)
                 is_paused = False
+                send_display_command("RESUME")
                 print("DEBUG - Music resumed successfully")
                 return True
             else:
@@ -71,6 +93,14 @@ def resume_music():
         print(f"DEBUG - Cannot resume: process={current_music_process}, paused={is_paused}")
     return False
 
+def get_song_duration(filepath):
+    """Get duration of WAV file in seconds (approximation)."""
+    try:
+        size = os.path.getsize(filepath)
+        return max(1, int(size / 176000))
+    except:
+        return 180
+
 def play_song(name):
     """Play the first song whose filename starts with the spoken name."""
     global current_music_process, is_paused
@@ -79,6 +109,7 @@ def play_song(name):
     
     if not name:
         speak("You did not say a song name.")
+        send_display_command("IDLE")
         return
     
     found_file = None
@@ -90,18 +121,27 @@ def play_song(name):
     if found_file is None:
         speak("I cannot find that song.")
         print(f"DEBUG - Song '{name}' not found in {MUSIC_DIR}")
+        send_display_command("IDLE")
         return
     
     full_path = os.path.join(MUSIC_DIR, found_file)
     print(f"DEBUG - Playing file: {full_path}")
     
     try:
+        # Get song info for display
+        song_name = os.path.splitext(found_file)[0]
+        duration = get_song_duration(full_path)
+        
         current_music_process = subprocess.Popen(
             ["aplay", full_path],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
         is_paused = False
+        
+        # Send display command
+        send_display_command(f"PLAY:{song_name}:Music:{duration}")
+        
         speak(f"Playing {name}")
         print(f"DEBUG - Music process started: PID={current_music_process.pid}")
         
@@ -112,8 +152,10 @@ def play_song(name):
             stderr = current_music_process.stderr.read().decode()
             print(f"DEBUG - Error output: {stderr}")
             current_music_process = None
+            send_display_command("IDLE")
         
     except Exception as e:
         print(f"DEBUG - Error playing song: {e}")
         speak("Error playing the song.")
         current_music_process = None
+        send_display_command("IDLE")

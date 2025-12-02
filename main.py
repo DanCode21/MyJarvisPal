@@ -7,7 +7,7 @@ import struct
 import time
 import os
 from System.tts import speak, ignore_audio
-from Audio.music import play_song, stop_music, pause_music, resume_music, is_music_playing
+from Audio.music import play_song, stop_music, pause_music, resume_music, is_music_playing, send_display_command
 from Audio.microphone import open_stream, cleanup as mic_cleanup
 from Voice.wakeword import detect_wake, porcupine, cleanup as wake_cleanup
 from Voice.rhino import rhino, cleanup as rhino_cleanup
@@ -48,6 +48,7 @@ def find_city(slots):
 
 print("Assistant is running")
 speak("Jarvis is online and ready for your command Sir.")
+send_display_command("IDLE")
 
 stream = open_stream(porcupine.sample_rate, porcupine.frame_length)
  # --------------------------------- Main Loop ---------------------------------
@@ -64,6 +65,7 @@ try:
         # Wake word detected
         if detect_wake(pcm) >= 0:
             print("\n=== WAKE WORD DETECTED ===")
+            send_display_command("LISTENING")
 
             was_playing = is_music_playing()
             if was_playing:
@@ -73,8 +75,13 @@ try:
             speak("At your service sir.")
             time.sleep(0.5)
 
+            send_display_command("PROCESSING")
+
             # Listen for Rhino command
             inference = listen_for_command(rhino)
+            
+            # Reset Rhino for next command
+            rhino.reset()
 
             print(f"\n=== INFERENCE RESULT ===")
             print(f"Understood: {inference.is_understood}")
@@ -96,6 +103,7 @@ try:
                         report = get_weather(city)
                         print(f"DEBUG - Weather: {report}")
                         speak(report)
+                    send_display_command("IDLE")
 
 #----------------------- ---------- SONG ----------------------- ----------
                 elif intent == "Song":
@@ -108,6 +116,7 @@ try:
                         was_playing = False
                     else:
                         speak("Please tell me which song to play.")
+                        send_display_command("IDLE")
 
  # ----------------------- ---------- TIME ----------------------- ----------
                 elif intent == "Time":
@@ -120,12 +129,14 @@ try:
                     else:
                         current_time = get_time(city)
                         speak(f"The time in {city} is {current_time}")
+                    send_display_command("IDLE")
 
 #----------------------- ---------- STOP MUSIC -------------------------------------
                 elif intent == "StopMusic":
                     stop_music()
                     speak("Music stopped.")
                     was_playing = False
+                    send_display_command("IDLE")
 
 # ----------------------- ---------- PAUSE MUSIC ---------------------------------
                 elif intent == "PauseMusic":
@@ -134,6 +145,7 @@ try:
                         was_playing = True
                     else:
                         speak("No music is playing.")
+                        send_display_command("IDLE")
 
 # ----------------------- ---------- RESUME MUSIC ---------------------------------
                 elif intent == "ResumeMusic":
@@ -142,27 +154,36 @@ try:
                         was_playing = False
                     else:
                         speak("No music to resume.")
+                        send_display_command("IDLE")
 
 # ----------------------- ---------- Volume up  ---------------------------------
                 elif intent == "VolumeUp":
                     os.system("amixer set Master 10%+")
                     speak("Volume increased.")
+                    if not is_music_playing():
+                        send_display_command("IDLE")
 
 # ----------------------- ---------- Volume Down  ---------------------------------
                 elif intent == "VolumeDown":
                     os.system("amixer set Master 10%-")
                     speak("Volume decreased.")
+                    if not is_music_playing():
+                        send_display_command("IDLE")
 
 # ----------------------- ---------- Sleep  ---------------------------------
                 elif intent == "Sleep":
                     speak("Goodbye sir. Going to sleep.")
+                    send_display_command("IDLE")
                     break
 
                 else:
                     speak(f"I understood the intent {intent}, but I cannot handle it yet.")
+                    if not is_music_playing():
+                        send_display_command("IDLE")
 
             else:
                 speak("Sorry, I didn't understand that. Please try again.")
+                send_display_command("IDLE")
 
             # Auto-resume music if needed
             if was_playing and intent not in ["Song", "StopMusic", "PauseMusic", "ResumeMusic"]:
@@ -177,4 +198,5 @@ finally:
     mic_cleanup()
     wake_cleanup()
     rhino_cleanup()
+    send_display_command("IDLE")
     print("GoodNight Sir")

@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.wav
+__pycache__/
+*.pyc
+display_controller
+music_player_integrated
+*.wav
+*.o
+*.out

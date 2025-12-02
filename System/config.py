@@ -1,4 +1,5 @@
 #Config.py
+
 import os
 # This finds the folder that contains your entire project
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -15,7 +16,8 @@ WAKEWORD_PATH = os.path.join(
 
 RHINO_CONTEXT = os.path.join(
     BASE_DIR,"API_Models","Rhino",
-   "Google-Home-Mini_en_raspberry-pi_v3_0_0.rhn")
+    "rhino_V2.rhn")
+  # "Google-Home-Mini_en_raspberry-pi_v3_0_0.rhn")
 
 # Audio folders & files
 MUSIC_DIR = os.path.join(BASE_DIR,"Audio","WaveFiles")

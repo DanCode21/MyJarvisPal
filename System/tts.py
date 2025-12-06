@@ -7,12 +7,11 @@ from System.config import TTS_WAV
 ignore_audio = False
 
 def speak(text):
-    """Speak text using flite and aplay."""
     global ignore_audio
 
     print("[Assistant]:", text)
 
-    # Do not let Jarvis hear himself
+    # Don't let it hear itself
     ignore_audio = True
 
     os.system(f'flite -t "{text}" -o {TTS_WAV}')

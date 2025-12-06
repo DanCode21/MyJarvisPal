@@ -107,14 +107,11 @@ int main(int argc, char *argv[])
         }
         
         draw_ui(&song, current_sec);
-        usleep(100000); // 100ms sleep
+        usleep(100000); 
     }
     
     printf("\n\nPlayback finished!\n");
-    
-    // Cleanup
-    st7789_hal_cleanup();
-    
+    st7789_hal_cleanup(); 
     printf("Goodbye!\n");
     return 0;
 }

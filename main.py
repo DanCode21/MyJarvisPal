@@ -1,6 +1,6 @@
 # main.py
 # Combined display + joystick main program
-# Display behavior unchanged. Joystick adjusts system Master volume only.
+# Joystick adjusts system Master volume only.
 
 import struct
 import time
@@ -125,7 +125,7 @@ if JOYSTICK_AVAILABLE:
         if not joystick_controller.start():
             print("Warning: Joystick failed to start")
         else:
-            print("✓ Joystick ready")
+            print(" Joystick ready")
     except Exception as e:
         print(f"Warning starting joystick: {e}")
 else:

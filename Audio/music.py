@@ -11,7 +11,6 @@ current_music_process = None
 is_paused = False
 
 def send_display_command(command):
-    """Send command to the ST7789 display controller."""
     try:
         # Check if pipe exists first
         if not os.path.exists(DISPLAY_PIPE):
@@ -29,7 +28,6 @@ def send_display_command(command):
         pass  # Silently fail if display not available
 
 def is_music_playing():
-    """Check if music is currently playing (not paused, not stopped)."""
     global current_music_process, is_paused
     if current_music_process is not None:
         # Check if process is still alive
@@ -38,7 +36,6 @@ def is_music_playing():
     return False
 
 def stop_music():
-    """Stop currently playing music."""
     global current_music_process, is_paused
     if current_music_process is not None:
         try:
@@ -51,7 +48,6 @@ def stop_music():
         send_display_command("STOP")
 
 def pause_music():
-    """Pause currently playing music. Returns True if successful."""
     global current_music_process, is_paused
     if current_music_process is not None and not is_paused:
         try:
@@ -71,7 +67,6 @@ def pause_music():
     return False
 
 def resume_music():
-    """Resume paused music. Returns True if successful."""
     global current_music_process, is_paused
     if current_music_process is not None and is_paused:
         try:
@@ -94,7 +89,6 @@ def resume_music():
     return False
 
 def get_song_duration(filepath):
-    """Get duration of WAV file in seconds (approximation)."""
     try:
         size = os.path.getsize(filepath)
         return max(1, int(size / 176000))
@@ -102,7 +96,6 @@ def get_song_duration(filepath):
         return 180
 
 def play_song(name):
-    """Play the first song whose filename starts with the spoken name."""
     global current_music_process, is_paused
     
     stop_music()

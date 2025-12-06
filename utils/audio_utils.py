@@ -1,8 +1,7 @@
 import numpy as np
 from scipy.signal import resample_poly
 
-def convert_audio(stereo_bytes, input_channels=2):
-    # Convert raw bytes → numpy int16
+def convert_audio(stereo_bytes, input_channels=2): # Convertion for stereo headphones
     data = np.frombuffer(stereo_bytes, dtype=np.int16)
 
     # Split into L/R

@@ -1,3 +1,23 @@
+# Compiled files
+*.o
+*.so
+music_player
+music_player_display
+st7789_test
+display_controller
+music_player_integrated
+display_main
+
+# Python cache
 __pycache__/
 *.pyc
+*.pyo
+
+# Audio files
 *.wav
+!wave-files/*.wav
+
+# IDE
+.vscode/
+*.swp
+*~

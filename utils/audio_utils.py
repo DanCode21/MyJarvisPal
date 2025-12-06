@@ -2,9 +2,6 @@ import numpy as np
 from scipy.signal import resample_poly
 
 def convert_audio(stereo_bytes, input_channels=2):
-    """
-    Convert stereo 48k audio -> mono 16k PCM int16 array.
-    """
     # Convert raw bytes → numpy int16
     data = np.frombuffer(stereo_bytes, dtype=np.int16)
 

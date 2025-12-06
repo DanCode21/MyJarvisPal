@@ -4,7 +4,6 @@ import requests
 from System.config import WEATHER_API_KEY
 
 def get_weather(city):
-    """Return a weather report for a given city."""
     try:
         url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={WEATHER_API_KEY}&units=metric"
         data = requests.get(url).json()

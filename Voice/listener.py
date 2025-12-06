@@ -3,7 +3,6 @@ import struct
 from Audio.microphone import open_stream
 
 def listen_for_command(rhino):
-    """Record up to 5 seconds of speech and return the inference."""
     rate = rhino.sample_rate
     size = rhino.frame_length
     stream = open_stream(rate, size)

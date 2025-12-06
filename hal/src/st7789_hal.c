@@ -1,4 +1,4 @@
-// st7789_hal.c - HAL with proper text rendering
+// st7789_hal.c - HAL with text rendering
 #include "st7789_hal.h"
 #include <stdio.h>
 #include <unistd.h>
@@ -99,10 +99,7 @@ static int char_to_index(char c) {
     return 26; // default space
 }
 
-// ===========================================================
 // HAL INITIALIZATION
-// ===========================================================
-
 int st7789_hal_init(void)
 {
     spi_fd = open("/dev/spidev0.0", O_RDWR);
@@ -137,19 +134,14 @@ void st7789_hal_cleanup(void)
         close(spi_fd);
 }
 
-// ===========================================================
-// COLOR
-// ===========================================================
+// COLOR CONVERSION
 
 uint16_t st7789_rgb(uint8_t r, uint8_t g, uint8_t b)
 {
     return rgb_to_color(r, g, b);
 }
 
-// ===========================================================
-// BASIC DRAW
-// ===========================================================
-
+// BASIC DRAWING
 void st7789_fill_screen(uint16_t color)
 {
     fill_color(color);
@@ -160,10 +152,7 @@ void st7789_fill_rect(int x, int y, int w, int h, uint16_t color)
     draw_rect(x, y, w, h, color);
 }
 
-// ===========================================================
 // TEXT RENDERING
-// ===========================================================
-
 void st7789_draw_char(int x, int y, char c, uint16_t fg, uint16_t bg, int scale)
 {
     int idx = char_to_index(c);
@@ -200,10 +189,7 @@ void st7789_draw_text(int x, int y, const char *txt, uint16_t fg, uint16_t bg, i
     }
 }
 
-// ===========================================================
 // PROGRESS BAR
-// ===========================================================
-
 void st7789_draw_progress_bar(int x, int y, int w, int h,
                               float progress, uint16_t fg, uint16_t bg)
 {

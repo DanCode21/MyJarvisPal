@@ -15,8 +15,8 @@ This project implements a voice assistant similar to Alexa or Google Home Mini, 
 
 ## Hardware 
 
-- **BeagleY-AI Board** (or compatible BeagleBone)
-- **USB Microphone** (or USB audio adapter with mic)
+- **BeagleY-AI Board** 
+- **USB Microphone** 
 - **ST7789 2.0" LCD Display** (240x320, SPI interface)
   - Wiring: DC → GPIO1_33, RST → GPIO2_8, SPI0.0
 - **Speaker/Headphones** (for audio output)
